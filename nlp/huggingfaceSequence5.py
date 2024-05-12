@@ -20,6 +20,9 @@ import numpy as np
 import random
 import json
 import os
+if 'PYTORCH_MPS_HIGH_WATERMARK_RATIO' in os.environ:
+    del os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO']
+
 valkey="test"#"validation"
 version_2_with_negative = True #squad_v2 or squad
 #Dualevaluation=True
@@ -121,7 +124,7 @@ def loaddata(args, USE_HPC):
         if USE_HPC:
             if args.data_name=='kde4':
                 #raw_datasets = load_dataset("kde4", lang1="en", lang2="fr")
-                datasetpath=os.path.join(mycache_dir, args.data_name, "en-fr-lang1\=en\,lang2\=fr", "0.0.0", "/243129fb2398d5b0b4f7f6831ab27ad84774b7ce374cf10f60f6e1ff331648ac") #"/data/cmpe249-fa23/Huggingfacecache/imdb/plain_text/1.0.0/d613c88cf8fa3bab83b4ded3713f1f74830d1100e171db75bbddb80b3345c9c0"
+                datasetpath=os.path.join(mycache_dir, args.data_name, r"en-fr-lang1\=en\,lang2\=fr", "0.0.0", "243129fb2398d5b0b4f7f6831ab27ad84774b7ce374cf10f60f6e1ff331648ac") #"/data/cmpe249-fa23/Huggingfacecache/imdb/plain_text/1.0.0/d613c88cf8fa3bab83b4ded3713f1f74830d1100e171db75bbddb80b3345c9c0"
                 #raw_datasets = load_dataset(args.data_name, cache_dir=mycache_dir) #eli5
                 datasetpath=os.path.join(mycache_dir, args.data_name)
                 trainarrowpath=os.path.join(mycache_dir, args.data_name, args.data_name+'-train.arrow')
@@ -214,6 +217,13 @@ def loaddata(args, USE_HPC):
                 task_column ="question"
                 text_column = "context"
                 target_column = "answers"
+            elif args.data_name=='tatoeba': 
+                raw_datasets = load_dataset("tatoeba", lang1="en", lang2="mr")
+                # Select the first 10,000 samples from the dataset
+                raw_datasets["train"] = raw_datasets["train"].select(range(1000))
+                task_column = "translation"
+                text_column = "en"
+                target_column = "mr"
             else: 
                 #raw_datasets = load_dataset(args.data_name, args.dataconfig) #dataconfig="train_asks[:5000]"
                 raw_datasets = load_dataset(args.data_name)
@@ -693,8 +703,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='simple distributed training job')
     parser.add_argument('--data_type', type=str, default="huggingface",
                     help='data type name: huggingface, custom')
-    parser.add_argument('--data_name', type=str, default="wmt19",
-                    help='data name: squad_v2, squad, opus_books, kde4, opus100, cnn_dailymail, billsum, xsum')
+    parser.add_argument('--data_name', type=str, default="tatoeba",
+                    help='data name: squad_v2, squad, opus_books, kde4, opus100, cnn_dailymail, billsum, xsum, tatoeba')
     parser.add_argument('--dataconfig', type=str, default='',
                     help='train_asks[:5000]')
     parser.add_argument('--subset', type=float, default=5000,
@@ -710,7 +720,7 @@ if __name__ == "__main__":
     parser.add_argument('--dualevaluate', default=True, action='store_true',
                     help='perform evaluation via HFevaluate and localevaluate')
     parser.add_argument("--source_lang", type=str, default="en", help="Source language id for translation.")
-    parser.add_argument("--target_lang", type=str, default="zh", help="Target language id for translation.")
+    parser.add_argument("--target_lang", type=str, default="mr", help="Target language id for translation.")
     parser.add_argument(
         "--source_prefix",
         type=str,
@@ -732,10 +742,10 @@ if __name__ == "__main__":
     parser.add_argument('--useHFaccelerator', default=False, action='store_true',
                     help='Use Huggingface accelerator')
     parser.add_argument('--gpuid', default=0, type=int, help='GPU id')
-    parser.add_argument('--total_epochs', default=16, type=int, help='Total epochs to train the model')
+    parser.add_argument('--total_epochs', default=5, type=int, help='Total epochs to train the model')
     parser.add_argument('--save_every', default=2, type=int, help='How often to save a snapshot')
-    parser.add_argument('--batch_size', default=8, type=int, help='Input batch size on each device (default: 32)')
-    parser.add_argument('--learningrate', default=2e-5, type=float, help='Learning rate')
+    parser.add_argument('--batch_size', default=4, type=int, help='Input batch size on each device (default: 32)')
+    parser.add_argument('--learningrate', default=2e-4, type=float, help='Learning rate')
     parser.add_argument(
         "--lr_scheduler_type",
         type=str,
@@ -1067,12 +1077,13 @@ if __name__ == "__main__":
         print("Using HF Accelerator and device:", device)
     else:
         accelerator = None
-        if torch.cuda.is_available():
-            device = torch.device('cuda:'+str(args.gpuid))  # CUDA GPU 0
-        elif torch.backends.mps.is_available():
-            device = torch.device("mps")
-        else:
-            device = torch.device("cpu")
+        # if torch.cuda.is_available():
+        #     device = torch.device('cuda:'+str(args.gpuid))  # CUDA GPU 0
+        # elif torch.backends.mps.is_available():
+        #     device = torch.device("mps")
+        # else:
+        #     device = torch.device("cpu")
+        device = torch.device("cpu")
 
         model.to(device)
         print("Using device:", device)
