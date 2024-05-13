@@ -709,7 +709,7 @@ if __name__ == "__main__":
                     help='train_asks[:5000]')
     parser.add_argument('--subset', type=float, default=5000,
                     help='0 means all dataset')
-    parser.add_argument('--cache_path', type=str, default="D:/Cache/huggingface",
+    parser.add_argument('--cache_path', type=str, default="./Cache/huggingface",
                     help='path to huggingface cache: /data/cmpe249-fa23/Huggingfacecache')
     parser.add_argument('--model_checkpoint', type=str, default="facebook/wmt21-dense-24-wide-en-x",
                     help='Model checkpoint name from HF, t5-base, mybert, distilbert-base-uncased, t5-small, t5-base, Helsinki-NLP/opus-mt-en-zh, Helsinki-NLP/opus-mt-en-fr, t5-small, facebook/wmt21-dense-24-wide-en-x')
