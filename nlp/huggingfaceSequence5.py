@@ -220,7 +220,7 @@ def loaddata(args, USE_HPC):
             elif args.data_name=='tatoeba': 
                 raw_datasets = load_dataset("tatoeba", lang1="en", lang2="mr")
                 # Select the first 10,000 samples from the dataset
-                raw_datasets["train"] = raw_datasets["train"].select(range(1000))
+                raw_datasets["train"] = raw_datasets["train"].select(range(100))
                 task_column = "translation"
                 text_column = "en"
                 target_column = "mr"
@@ -742,10 +742,10 @@ if __name__ == "__main__":
     parser.add_argument('--useHFaccelerator', default=False, action='store_true',
                     help='Use Huggingface accelerator')
     parser.add_argument('--gpuid', default=0, type=int, help='GPU id')
-    parser.add_argument('--total_epochs', default=5, type=int, help='Total epochs to train the model')
+    parser.add_argument('--total_epochs', default=3, type=int, help='Total epochs to train the model')
     parser.add_argument('--save_every', default=2, type=int, help='How often to save a snapshot')
     parser.add_argument('--batch_size', default=4, type=int, help='Input batch size on each device (default: 32)')
-    parser.add_argument('--learningrate', default=2e-4, type=float, help='Learning rate')
+    parser.add_argument('--learningrate', default=2e-2, type=float, help='Learning rate')
     parser.add_argument(
         "--lr_scheduler_type",
         type=str,
@@ -1146,11 +1146,11 @@ if __name__ == "__main__":
                 #unwrapped_model.save_pretrained(trainoutput, save_function=accelerator.save)
                 if accelerator.is_main_process:
                     tokenizer.save_pretrained(trainoutput)
-                savemodels(model, optimizer, epoch, trainoutput)
+                # savemodels(model, optimizer, epoch, trainoutput)
             else:
                 #model.save_pretrained(trainoutput)
                 #torch.save(model.state_dict(), os.path.join(trainoutput, 'savedmodel.pth'))
-                savemodels(model, optimizer, epoch, trainoutput)
+                # savemodels(model, optimizer, epoch, trainoutput)
                 tokenizer.save_pretrained(trainoutput)
 
     del model, optimizer, lr_scheduler
