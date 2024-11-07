@@ -31,19 +31,29 @@ class KittiDataset(torch.utils.data.Dataset):
         # load all image files, sorting them to
         # ensure that they are aligned
         self.split = split
+        self.root_split_path = os.path.join(self.root, "raw", self._location)
+
         split_dir = Path(self.root) / 'ImageSets' / (self.split + '.txt') #select kitti/ImageSets/val.txt
         #sample_id_list: str list
-        self.sample_id_list = [x.strip() for x in open(split_dir).readlines()] if split_dir.exists() else None
+        if split_dir.exists():
+            self.sample_id_list = [x.strip() for x in open(split_dir).readlines()]
+        else:
+            print(f"Warning: Split file {split_dir} not found. Using all images in the dataset.")
+            image_dir = Path(self.root_split_path) / self.image_dir_name
+            self.sample_id_list = [f.stem for f in image_dir.glob('*.png')]
+        print(f"Number of samples found: {len(self.sample_id_list)}")
+
         self.root_split_path = os.path.join(self.root, "raw", self._location)
         
-        # image_dir = os.path.join(self.root, "raw", self._location, self.image_dir_name)
-        # if self.train:
-        #     labels_dir = os.path.join(self.root, "raw", self._location, self.labels_dir_name)
-        # for img_file in os.listdir(image_dir):
-        #     self.images.append(os.path.join(image_dir, img_file))
-        #     if self.train:
-        #         self.targets.append(os.path.join(labels_dir, f"{img_file.split('.')[0]}.txt"))
-        #self.imgs = list(sorted(os.listdir(os.path.join(self.root, "PNGImages"))))
+        image_dir = os.path.join(self.root, "raw", self._location, self.image_dir_name)
+        if self.train:
+            labels_dir = os.path.join(self.root, "raw", self._location, self.labels_dir_name)
+        for img_file in os.listdir(image_dir):
+            self.images.append(os.path.join(image_dir, img_file))
+            if self.train:
+                self.targets.append(os.path.join(labels_dir, f"{img_file.split('.')[0]}.txt"))
+        # self.imgs = list(sorted(os.listdir(os.path.join(self.root, "PNGImages"))))
+        self.imgs = sorted([f for f in os.listdir(image_dir) if f.endswith('.png')])
         self.INSTANCE_CATEGORY_NAMES = ['__background__', 'Car', 'Van', 'Truck', 'Pedestrian', 'Person_sitting', 'Cyclist', 'Tram', 'Misc', 'DontCare']
         self.INSTANCE2id = {'__background__':0,'Car': 1, 'Van': 2, 'Truck': 3, 'Pedestrian':4, 'Person_sitting':5, 'Cyclist':6, 'Tram':7, 'Misc':8, 'DontCare':9} #background is 0
         self.id2INSTANCE = {v: k for k, v in self.INSTANCE2id.items()}
@@ -226,7 +236,7 @@ class KittiDataset(torch.utils.data.Dataset):
         return newtarget, imageidx
 
     def __len__(self) -> int:
-        return len(self.sample_id_list)#(self.images)
+        return len(self.imgs)#(self.images)
 
 class MyKittiDetection(torch.utils.data.Dataset):
     def __init__(self, 
@@ -252,7 +262,8 @@ class MyKittiDetection(torch.utils.data.Dataset):
             self.images.append(os.path.join(image_dir, img_file))
             if self.train:
                 self.targets.append(os.path.join(labels_dir, f"{img_file.split('.')[0]}.txt"))
-        #self.imgs = list(sorted(os.listdir(os.path.join(self.root, "PNGImages"))))
+        # self.imgs = list(sorted(os.listdir(os.path.join(self.root, "PNGImages"))))
+        # self.imgs = sorted([f for f in os.listdir(self.image_dir) if f.endswith('.png')])
         self.INSTANCE_CATEGORY_NAMES = ['Car', 'Van', 'Truck', 'Pedestrian', 'Person_sitting', 'Cyclist', 'Tram', 'Misc', 'DontCare']
         self.INSTANCE2id = {'Car': 1, 'Van': 2, 'Truck': 3, 'Pedestrian':4, 'Person_sitting':5, 'Cyclist':6, 'Tram':7, 'Misc':8, 'DontCare':9} #background is 0
         self.id2INSTANCE = {v: k for k, v in self.INSTANCE2id.items()}

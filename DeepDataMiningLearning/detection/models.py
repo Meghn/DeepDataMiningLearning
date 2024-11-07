@@ -174,7 +174,7 @@ def load_checkpoint(model, ckpt_file, fp16=False):
     model.half() if fp16 else model.float()
     return model
 
-def create_detectionmodel(modelname, num_classes=None, trainable_layers=0, ckpt_file = None, fp16=False, device= 'cuda:0', scale='n'):
+def create_detectionmodel(modelname, num_classes=None, trainable_layers=0, ckpt_file = None, fp16=False, device= torch.device("mps" if torch.backends.mps.is_available() else "cpu"), scale='n'):
     model = None
     preprocess = None
     classes = None
