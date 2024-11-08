@@ -11,7 +11,7 @@ import torchvision.models.detection
 from DeepDataMiningLearning.detection import utils
 from DeepDataMiningLearning.detection.trainutils import create_aspect_ratio_groups, GroupedBatchSampler
 
-from DeepDataMiningLearning.detection.dataset import get_dataset #get_cocodataset, get_kittidataset, get_transform
+from DeepDataMiningLearning.detection.dataset import get_dataset, get_cocodataset, get_kittidataset, get_transform
 from DeepDataMiningLearning.detection.models import create_detectionmodel #get_torchvision_detection_models, modify_fasterrcnnheader
 from DeepDataMiningLearning.detection.myevaluator import simplemodelevaluate, modelevaluate
 
@@ -181,11 +181,11 @@ def main(args):
     # Data loading code
     print("Loading data")
 
-    # dataset, num_classes = get_dataset(args.dataset, is_train=True, is_val=False, args=args) #get_dataset
-    # dataset_test, _ = get_dataset(args.dataset, is_train=False, is_val=True, args=args)
+    dataset, num_classes = get_dataset(args.dataset, is_train=True, is_val=False, args=args) #get_dataset
+    dataset_test, _ = get_dataset(args.dataset, is_train=False, is_val=True, args=args)
 
-    dataset = KittiDataset(args.data_path, split='training', transform=get_transform(train=True))
-    dataset_test = KittiDataset(args.data_path, split='testing', transform=get_transform(train=False))
+    # dataset = KittiDataset(args.data_path, split='training', transform=get_transform(train=True))
+    # dataset_test = KittiDataset(args.data_path, split='testing', transform=get_transform(train=False))
     
     num_classes = dataset.numclass + 1  # +1 for background
 
@@ -368,13 +368,13 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq, sc
 
     return metric_logger
 
-def get_transform(train):
-    transforms = []
-    transforms.append(T.PILToTensor())
-    transforms.append(T.ToDtype(torch.float, scale=True))
-    if train:
-        transforms.append(T.RandomHorizontalFlip(0.5))
-    return T.Compose(transforms)
+# def get_transform(train):
+#     transforms = []
+#     transforms.append(T.PILToTensor())
+#     transforms.append(T.ToDtype(torch.float, scale=True))
+#     if train:
+#         transforms.append(T.RandomHorizontalFlip(0.5))
+#     return T.Compose(transforms)
 
 if __name__ == "__main__":
     args = get_args_parser().parse_args()

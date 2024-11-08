@@ -191,10 +191,10 @@ def get_kittidataset(is_train, is_val, args):
     #dataset = MyKittiDetection(rootPath, train=True, transform=get_transform(is_train, args))
     if is_val == True:
         transformfunc=get_transform(False, args)
-        dataset = KittiDataset(rootPath, train=True, split='val', transform=transformfunc)
+        dataset = KittiDataset(rootPath, train=True, split='testing', transform=transformfunc)
     else:
         transformfunc=get_transform(True, args) #add augumentation
-        dataset = KittiDataset(rootPath, train=is_train, split='train', transform=transformfunc)
+        dataset = KittiDataset(rootPath, train=is_train, split='training', transform=transformfunc)
     
     num_classes = dataset.numclass
     return dataset, num_classes
